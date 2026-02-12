@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchNotes, createNote } from "@/lib/api";
+import { useDebouncedCallback } from "use-debounce";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
-import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
+import SearchBox from "@/components/SearchBox/SearchBox";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./NotesPage.module.css";
@@ -14,7 +15,6 @@ import css from "./NotesPage.module.css";
 export default function NotesClient() {
   const router = useRouter();
   const params = useSearchParams();
-  const queryClient = useQueryClient();
 
   const page = Number(params.get("page")) || 1;
   const search = params.get("search") || "";
@@ -24,23 +24,12 @@ export default function NotesClient() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["notes", page, search],
     queryFn: () => fetchNotes(page, search),
+    placeholderData: (prev) => prev,
   });
 
-  const mutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsOpen(false);
-    },
-  });
-
-  const handleSearch = (value: string) => {
+  const debouncedSearch = useDebouncedCallback((value: string) => {
     router.push(`/notes?page=1&search=${value}`);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    router.push(`/notes?page=${newPage}&search=${search}`);
-  };
+  }, 500);
 
   if (isLoading) return <p>Loading, please wait...</p>;
   if (error || !data) return <p>Something went wrong.</p>;
@@ -48,21 +37,27 @@ export default function NotesClient() {
   return (
     <div className={css.container}>
       <div className={css.toolbar}>
-        <SearchBox value={search} onChange={handleSearch} />
-        <button onClick={() => setIsOpen(true)}>Create note</button>
+        <SearchBox
+          value={search}
+          onChange={(value) => debouncedSearch(value)}
+        />
+
+        <button onClick={() => setIsOpen(true)}>Create note +</button>
       </div>
 
-      <NoteList notes={data.notes} totalPages={data.totalPages} />
+      <NoteList notes={data.notes} />
 
-      <Pagination
-        pageCount={data.totalPages}
-        currentPage={page}
-        onPageChange={handlePageChange}
-      />
+      {data.totalPages > 1 && (
+        <Pagination
+          pageCount={data.totalPages}
+          currentPage={page}
+          onPageChange={(p) => router.push(`/notes?page=${p}&search=${search}`)}
+        />
+      )}
 
       {isOpen && (
         <Modal onClose={() => setIsOpen(false)}>
-          <NoteForm onSubmit={(data) => mutation.mutate(data)} />
+          <NoteForm onClose={() => setIsOpen(false)} />
         </Modal>
       )}
     </div>

@@ -3,12 +3,12 @@
 import { ChangeEvent } from "react";
 import css from "./SearchBox.module.css";
 
-interface Props {
+export interface SearchBoxProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-export default function SearchBox({ value, onChange }: Props) {
+export default function SearchBox({ value, onChange }: SearchBoxProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
@@ -17,7 +17,7 @@ export default function SearchBox({ value, onChange }: Props) {
     <input
       className={css.input}
       type="text"
-      placeholder="Search notes..."
+      placeholder="Search notes"
       value={value}
       onChange={handleChange}
     />

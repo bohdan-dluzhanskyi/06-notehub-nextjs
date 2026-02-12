@@ -26,7 +26,7 @@ export default function Modal({ children, onClose }: Props) {
   }, [onClose]);
 
   return createPortal(
-    <div className={css.overlay} onClick={onClose}>
+    <div className={css.backdrop} onClick={onClose}>
       <div className={css.modal} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>

@@ -4,17 +4,16 @@ import css from "./Header.module.css";
 export default function Header() {
   return (
     <header className={css.header}>
-      <Link href="/" aria-label="Home">
+      <a href="/" aria-label="Home">
         NoteHub
-      </Link>
-
+      </a>
       <nav aria-label="Main Navigation">
         <ul className={css.navigation}>
           <li>
-            <Link href="/">Home</Link>
+            <a href="/">Home</a>
           </li>
           <li>
-            <Link href="/notes">Notes</Link>
+            <a href="/notes">Notes</a>
           </li>
         </ul>
       </nav>
