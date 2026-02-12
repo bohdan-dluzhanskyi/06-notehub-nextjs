@@ -18,7 +18,7 @@ type NoteFormValues = {
 
 const validationSchema = Yup.object({
   title: Yup.string().min(3).max(50).required(),
-  content: Yup.string().max(500).required(),
+  content: Yup.string().max(500),
   tag: Yup.string()
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required(),
